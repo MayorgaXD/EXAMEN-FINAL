@@ -7,33 +7,40 @@ import { menuInterfazPublico } from './Catalogo.js';
 
 const controlador = new TiendaController();
 
+// El 'export' está perfecto aquí antes de la clase
 export class Menu {
     async getMenu() {
         console.clear();
         console.log(chalk.bold.cyan("================================================="));
-        console.log(chalk.bold.cyan("     👔 SISTEMA DE GESTIÓN DE TIENDA DE ROPA 👔   "));
+        console.log(chalk.bold.cyan("      SISTEMA DE GESTIÓN DE TIENDA DE ROPA    "));
         console.log(chalk.bold.cyan("================================================="));
         
         const opcion = await inquirer.prompt([
             {
-                type: 'select',
+                type: 'select', // Usando 'select' compatible con tu versión de Inquirer
                 name: 'accion',
                 message: 'Seleccione el módulo al que desea ingresar:',
                 choices: [
                     '1. Ver Catálogo Público', 
-                    '2. Panel de Administración', 
-                    '3. Cerrar Sistema'
+                    '2.  Realizar una Compra (Cliente)', 
+                    '3. Panel de Administración', 
+                    '4. Cerrar Sistema'
                 ]
             }
         ]);
 
         if (opcion.accion.includes('1')) {
-            // Mandamos a llamar al archivo individual de tu amigo
-            // Le pasamos como parámetro () => this.getMenu() para que cuando él le dé "Volver", regrese aquí
             await menuInterfazPublico(() => this.getMenu()); 
-        } else if (opcion.accion.includes('2')) {
+        } 
+        else if (opcion.accion.includes('2')) {
+            await controlador.ProcesarCompraCliente(); 
+            await inquirer.prompt([{ type: 'input', name: 'enter', message: '\nPresiona Enter para continuar...' }]);
+            await this.getMenu(); 
+        } 
+        else if (opcion.accion.includes('3')) {
             await this.MenuAdmin(); 
-        } else {
+        } 
+        else {
             console.log(chalk.yellow('\nCerrando el sistema. ¡Nos vemos! 👋\n'));
             process.exit();
         }
@@ -42,15 +49,15 @@ export class Menu {
     async MenuAdmin() {
         console.clear();
         console.log(chalk.bold.magenta("========================================="));
-        console.log(chalk.bold.magenta("     ⚙️ PANEL DE CONTROL (BACKEND) ⚙️     "));
+        console.log(chalk.bold.magenta("      PANEL DE CONTROL (BACKEND)      "));
         console.log(chalk.bold.magenta("=========================================\n"));
         
         const opcion = await inquirer.prompt([
             {
-                type: 'select',
+                type: 'select', 
                 name: 'accion',
                 message: 'Seleccione una operación:',
-                choices: ['Ver Inventario', 'Ingresar Nueva Prenda ', 'Volver al Menú']
+                choices: ['Ver Inventario', 'Ingresar Nueva Prenda', 'Volver al Menú']
             }
         ]);
 
@@ -59,12 +66,14 @@ export class Menu {
             if (inventario.length === 0) {
                 console.log(chalk.yellow("El inventario está vacío."));
             } else {
-                inventario.forEach(p => console.log(p.ObtenerDetalles()));
+                // CORREGIDO: Usamos ObtenerDetalles() para respetar las variables privadas encapsuladas
+                console.log(chalk.bold.blue("--- Stock Actual del Almacén ---"));
+                inventario.forEach(p => console.log(chalk.white(p.ObtenerDetalles())));
             }
             await inquirer.prompt([{ type: 'input', name: 'enter', message: '\nPresiona Enter para continuar...' }]);
             await this.MenuAdmin();
         } 
-        else if (opcion.accion === 'Nueva Prenda ') {
+        else if (opcion.accion === 'Ingresar Nueva Prenda') {
             const datos = await inquirer.prompt([
                 { type: 'input', name: 'id', message: 'ID único de prenda (Ej: 001):' },
                 { type: 'input', name: 'nombre', message: 'Nombre del artículo:' },
