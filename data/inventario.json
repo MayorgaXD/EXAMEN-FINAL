@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": "001",
+    "nombre": "Jordan",
+    "precio": 233,
+    "stock": 0,
+    "tipo": "RopaHombre"
+  },
+  {
+    "id": "002",
+    "nombre": "Tommy",
+    "precio": 132,
+    "stock": 3,
+    "tipo": "RopaHombre"
+  }
+]

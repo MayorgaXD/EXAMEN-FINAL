@@ -2,90 +2,89 @@ import inquirer from 'inquirer';
 import chalk from 'chalk';
 import { TiendaController } from '../controller/TiendaController.js';
 import { RopaHombre } from '../class/RopaHombre.js';
-// IMPORTACIÓN CLAVE: Traemos el archivo individual de tu amigo
 import { menuInterfazPublico } from './Catalogo.js'; 
 
 const controlador = new TiendaController();
 
-// El 'export' está perfecto aquí antes de la clase
+// Colores Aesthetic para el Menú Principal y Admin
+const neonFucsia = chalk.hex('#FF007F').bold;
+const neonCian = chalk.hex('#00F5FF');
+const pastelMorado = chalk.hex('#D4B2FF');
+const oroAesthetic = chalk.hex('#FFEE55');
+
 export class Menu {
     async getMenu() {
         console.clear();
-        console.log(chalk.bold.cyan("================================================="));
-        console.log(chalk.bold.cyan("      SISTEMA DE GESTIÓN DE TIENDA DE ROPA    "));
-        console.log(chalk.bold.cyan("================================================="));
+        console.log(neonFucsia("┌─────────────────────────────────────────────────┐"));
+        console.log(`${neonFucsia('│')} ${neonCian("    🔮  V A P O R W A V E   C L O T H I N G  🔮   ")} ${neonFucsia('│')}`);
+        console.log(`${neonFucsia('│')} ${pastelMorado("        - S I S T E M A   C E N T R A L -        ")} ${neonFucsia('│')}`);
+        console.log(neonFucsia("└─────────────────────────────────────────────────┘"));
         
         const opcion = await inquirer.prompt([
             {
-                type: 'select', // Usando 'select' compatible con tu versión de Inquirer
+                type: 'select',
                 name: 'accion',
-                message: 'Seleccione el módulo al que desea ingresar:',
+                message: 'Selecciona el entorno de ejecución:',
                 choices: [
-                    '1. Ver Catálogo Público', 
-                    '2.  Realizar una Compra (Cliente)', 
-                    '3. Panel de Administración', 
-                    '4. Cerrar Sistema'
+                    '✨ Módulo 1: Catálogo y Compras (Cliente)', // Al entrar aquí pueden ver la tabla y comprar de un solo
+                    '⚙️  Módulo 2: Panel de Inventario (Admin Backend)', 
+                    '❌ Módulo 3: Salir de la Terminal'
                 ]
             }
         ]);
 
-        if (opcion.accion.includes('1')) {
+        if (opcion.accion.includes('Módulo 1')) {
             await menuInterfazPublico(() => this.getMenu()); 
         } 
-        else if (opcion.accion.includes('2')) {
-            await controlador.ProcesarCompraCliente(); 
-            await inquirer.prompt([{ type: 'input', name: 'enter', message: '\nPresiona Enter para continuar...' }]);
-            await this.getMenu(); 
-        } 
-        else if (opcion.accion.includes('3')) {
+        else if (opcion.accion.includes('Módulo 2')) {
             await this.MenuAdmin(); 
         } 
         else {
-            console.log(chalk.yellow('\nCerrando el sistema. ¡Nos vemos! 👋\n'));
+            console.log(neonFucsia('\n[!] Desconectando servidores... ¡Nos vemos, mostro! 🌊\n'));
             process.exit();
         }
     }
 
     async MenuAdmin() {
         console.clear();
-        console.log(chalk.bold.magenta("========================================="));
-        console.log(chalk.bold.magenta("      PANEL DE CONTROL (BACKEND)      "));
-        console.log(chalk.bold.magenta("=========================================\n"));
+        console.log(pastelMorado("┌─────────────────────────────────────────┐"));
+        console.log(`${pastelMorado('│')} ${oroAesthetic("   🛠️  BACKEND DATABASE MANAGEMENT  🛠️   ")} ${pastelMorado('│')}`);
+        console.log(pastelMorado("└─────────────────────────────────────────┘\n"));
         
         const opcion = await inquirer.prompt([
             {
-                type: 'select', 
+                type: 'select',
                 name: 'accion',
-                message: 'Seleccione una operación:',
-                choices: ['Ver Inventario', 'Ingresar Nueva Prenda', 'Volver al Menú']
+                message: 'Operación del Administrador:',
+                choices: ['⚡ Inspeccionar Base de Datos', '➕ Agregarnueva prenda', '⬅️  Regresar al menu principal']
             }
         ]);
 
-        if (opcion.accion === 'Ver Inventario') {
+        if (opcion.accion === '⚡ Inspeccionar Base de Datos') {
+            controlador.CargarDatos(); 
             const inventario = controlador.ObtenerCatalogo();
             if (inventario.length === 0) {
-                console.log(chalk.yellow("El inventario está vacío."));
+                console.log(chalk.hex('#FF6B6B')("\n[Alerta] No existen registros en data/inventario.json\n"));
             } else {
-                // CORREGIDO: Usamos ObtenerDetalles() para respetar las variables privadas encapsuladas
-                console.log(chalk.bold.blue("--- Stock Actual del Almacén ---"));
-                inventario.forEach(p => console.log(chalk.white(p.ObtenerDetalles())));
+                console.log(neonCian("\n─── 📦 DATA POOL ACTUAL ───"));
+                inventario.forEach(p => console.log(pastelMorado(" > ") + chalk.white(p.ObtenerDetalles())));
             }
             await inquirer.prompt([{ type: 'input', name: 'enter', message: '\nPresiona Enter para continuar...' }]);
             await this.MenuAdmin();
         } 
-        else if (opcion.accion === 'Ingresar Nueva Prenda') {
+        else if (opcion.accion === '➕ Inyectar nueva prenda al JSON') {
             const datos = await inquirer.prompt([
-                { type: 'input', name: 'id', message: 'ID único de prenda (Ej: 001):' },
-                { type: 'input', name: 'nombre', message: 'Nombre del artículo:' },
-                { type: 'number', name: 'precio', message: 'Precio en dólares ($):' },
-                { type: 'number', name: 'stock', message: 'Cantidad inicial (Stock):' },
-                { type: 'input', name: 'corte', message: 'Categoría o Sección:' }
+                { type: 'input', name: 'id', message: 'UUID / ID de control:' },
+                { type: 'input', name: 'nombre', message: 'Nombre de la prenda:' },
+                { type: 'number', name: 'precio', message: 'Precio de venta ($):' },
+                { type: 'number', name: 'stock', message: 'Unidades de stock entrante:' },
+                { type: 'input', name: 'corte', message: 'Categoría/Sección:' }
             ]);
 
             const nuevaRopa = new RopaHombre(datos.id, datos.nombre, datos.precio, datos.stock, datos.corte);
             controlador.AgregarPrenda(nuevaRopa);
             
-            console.log(chalk.green("\n✔ Prenda guardada exitosamente en la base de datos. 💾\n"));
+            console.log(neonCian("\n✔️ System: Objeto instanciado y persistido en JSON con éxito. 💾\n"));
             await inquirer.prompt([{ type: 'input', name: 'enter', message: 'Presiona Enter para continuar...' }]);
             await this.MenuAdmin();
         } else {

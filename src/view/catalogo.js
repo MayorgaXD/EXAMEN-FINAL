@@ -4,18 +4,22 @@ import { TiendaController } from '../controller/TiendaController.js';
 
 const controlador = new TiendaController();
 
-const colorBorde = chalk.hex('#4682B4');       
-const colorClave = chalk.hex('#50C878');       
-const colorTexto = chalk.hex('#00008B');    
-const colorAviso = chalk.yellow;
+// 🎨 PALETA AESTHETIC DE NEÓN PASTEL
+const colorBorde = chalk.hex('#708090');       // Gris Slate elegante para los bordes
+const colorTitulo = chalk.hex('#98FF98');      // Menta Pastel brillante para el encabezado
+const colorClave = chalk.hex('#E0B0FF');       // Malva/Lila Pastel para los ID y Encabezados
+const colorTexto = chalk.hex('#F0F8FF');       // Blanco Alice suave para los nombres de ropa
+const colorPrecio = chalk.hex('#FFD700');      // Oro suave para los precios 💰
+const colorStock = chalk.hex('#87CEEB');       // Azul Cielo para las cantidades
+const colorAviso = chalk.hex('#FF7F50');       // Coral suave para las advertencias
 
 function mostrarCatalogoEstilizado() {
     console.clear();
     
-    console.log(colorBorde("================================================================="));
-    console.log(colorClave("                       CATÁLOGO PÚBLICO                          "));
-    console.log(colorTexto("          (Lista de información disponible en el inventario)      "));
-    console.log(colorBorde("=================================================================\n"));
+    console.log(colorBorde("┌───────────────────────────────────────────────────────────────┐"));
+    console.log(`${colorBorde('│')} ${colorTitulo("📂  C A T Á L O G O   P Ú B L I C O  ( V I S T A )".padEnd(61))} ${colorBorde('│')}`);
+    console.log(`${colorBorde('│')} ${chalk.gray("Sincronizado directamente con el inventario central.".padEnd(61))} ${colorBorde('│')}`);
+    console.log(colorBorde("└───────────────────────────────────────────────────────────────┘\n"));
 
     const anchoID = 12;
     const anchoNombre = 25;
@@ -24,10 +28,10 @@ function mostrarCatalogoEstilizado() {
 
     console.log(colorBorde(`┌${'─'.repeat(anchoID)}┬${'─'.repeat(anchoNombre)}┬${'─'.repeat(anchoPrecio)}┬${'─'.repeat(anchoStock)}┐`));
 
-    const hID = colorClave("ID Objeto".padEnd(anchoID));
-    const hNombre = colorClave("Nombre Prenda".padEnd(anchoNombre));
-    const hPrecio = colorClave("Precio".padEnd(anchoPrecio));
-    const hStock = colorClave("Stock".padEnd(anchoStock));
+    const hID = colorClave("ID PRENDA".padEnd(anchoID));
+    const hNombre = colorClave("ARTÍCULO".padEnd(anchoNombre));
+    const hPrecio = colorClave("PRECIO".padEnd(anchoPrecio));
+    const hStock = colorClave("STOCK".padEnd(anchoStock));
     console.log(`${colorBorde('│')}${hID}${colorBorde('│')}${hNombre}${colorBorde('│')}${hPrecio}${colorBorde('│')}${hStock}${colorBorde('│')}`);
 
     console.log(colorBorde(`├${'─'.repeat(anchoID)}┼${'─'.repeat(anchoNombre)}┼${'─'.repeat(anchoPrecio)}┼${'─'.repeat(anchoStock)}┤`));
@@ -35,25 +39,24 @@ function mostrarCatalogoEstilizado() {
     const baseDeDatosReales = controlador.ObtenerCatalogo();
 
     if (baseDeDatosReales.length === 0) {
-        const mensajeVacio = " No hay ropa registrada en el backend ".padEnd(anchoID + anchoNombre + anchoPrecio + anchoStock + 3);
-        console.log(`${colorBorde('│')}${chalk.red(mensajeVacio)}${colorBorde('│')}`);
+        const mensajeVacio = " El almacén está completamente vacío... ".padEnd(anchoID + anchoNombre + anchoPrecio + anchoStock + 3);
+        console.log(`${colorBorde('│')}${chalk.hex('#FF6B6B')(mensajeVacio)}${colorBorde('│')}`);
     } else {
         baseDeDatosReales.forEach(item => {
-            const vID = colorTexto(String(item.id).padEnd(anchoID));
+            const vID = colorClave(String(item.id).padEnd(anchoID));
             const vNombre = colorTexto(String(item.nombre).padEnd(anchoNombre));
-            const vPrecio = colorTexto(`$${item.precio}`.padEnd(anchoPrecio));
-            const vStock = colorTexto(String(item.stock).padEnd(anchoStock));
+            const vPrecio = colorPrecio(`$${item.precio}`.padEnd(anchoPrecio));
+            const vStock = colorStock(String(item.stock).padEnd(anchoStock));
             
             console.log(`${colorBorde('│')}${vID}${colorBorde('│')}${vNombre}${colorBorde('│')}${vPrecio}${colorBorde('│')}${vStock}${colorBorde('│')}`);
         });
     }
 
     console.log(colorBorde(`└${'─'.repeat(anchoID)}┴${'─'.repeat(anchoNombre)}┴${'─'.repeat(anchoPrecio)}┴${'─'.repeat(anchoStock)}┘`));
-    console.log(colorAviso("\n* OJO : Este catalogo es meramente visual. nada se puede cambiar."));
-    console.log(colorBorde("=================================================================\n"));
+    console.log(colorAviso("\n✨ Nota: Los precios mostrados no incluyen IVA."));
+    console.log(colorBorde("─────────────────────────────────────────────────────────────────\n"));
 }
 
-// Ponemos export para poder llamarlo desde tu menú principal
 export async function menuInterfazPublico(regresarAlMenuMaestro) {
     mostrarCatalogoEstilizado();
 
@@ -61,19 +64,27 @@ export async function menuInterfazPublico(regresarAlMenuMaestro) {
         {
             type: 'select',
             name: 'opcion',
-            message: 'Seleccione una opción:',
+            message: '¿Qué deseas hacer ahora, mae?',
             choices: [
-                { name: '🔄 Actualizar Vista', value: 'REFRESCAR' },
-                { name: '⬅ Volver al Menú Maestro', value: 'VOLVER' }
+                { name: '🛍️  Comprar una Prenda', value: 'COMPRAR' }, 
+                { name: '🔄 Sincronizar catálogo', value: 'REFRESCAR' },
+                { name: '⬅️  Volver al Inicio', value: 'VOLVER' }
             ]
         }
     ]);
 
-    if (respuestas.opcion === 'REFRESCAR') {
+    if (respuestas.opcion === 'COMPRAR') {
+        // Ejecuta tu backend de compras directamente
+        await controlador.ProcesarCompraCliente();
+        await inquirer.prompt([{ type: 'input', name: 'enter', message: '\nPresiona Enter para continuar...' }]);
+        // Recarga la tabla de inmediato para mostrar el nuevo stock rebajado
+        await menuInterfazPublico(regresarAlMenuMaestro);
+    } 
+    else if (respuestas.opcion === 'REFRESCAR') {
         controlador.CargarDatos(); 
         await menuInterfazPublico(regresarAlMenuMaestro);
-    } else {
-        // En vez de cerrar el programa, ejecuta la función para volver a tu menú
+    } 
+    else {
         await regresarAlMenuMaestro(); 
     }
 }
