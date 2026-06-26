@@ -2,86 +2,85 @@ import inquirer from 'inquirer';
 import chalk from 'chalk';
 import { TiendaController } from '../controller/TiendaController.js';
 import { RopaHombre } from '../class/RopaHombre.js';
+// IMPORTACIÓN CLAVE: Traemos el archivo individual de tu amigo
+import { menuInterfazPublico } from './Catalogo.js'; 
 
 const controlador = new TiendaController();
 
 export class Menu {
     async getMenu() {
         console.clear();
-        console.log(chalk.bold.magenta("================================================="));
-        console.log(chalk.bold.magenta("    ⚙️      SISTEMA DE CONTROL DE INVENTARIO  ⚙️    "));
-        console.log(chalk.bold.magenta("================================================="));
+        console.log(chalk.bold.cyan("================================================="));
+        console.log(chalk.bold.cyan("     👔 SISTEMA DE GESTIÓN DE TIENDA DE ROPA 👔   "));
+        console.log(chalk.bold.cyan("================================================="));
         
         const opcion = await inquirer.prompt([
             {
                 type: 'select',
                 name: 'accion',
-                message: 'Seleccione la operación que desea realizar en el inventario:',
+                message: 'Seleccione el módulo al que desea ingresar:',
                 choices: [
-                    '1. Ver Inventario Completo (Stock Actual)', 
-                    '2. Agregar Nueva Prenda al Inventario', 
+                    '1. Ver Catálogo Público', 
+                    '2. Panel de Administración', 
                     '3. Cerrar Sistema'
                 ]
             }
         ]);
 
         if (opcion.accion.includes('1')) {
-            await this.VerInventario();
+            // Mandamos a llamar al archivo individual de tu amigo
+            // Le pasamos como parámetro () => this.getMenu() para que cuando él le dé "Volver", regrese aquí
+            await menuInterfazPublico(() => this.getMenu()); 
         } else if (opcion.accion.includes('2')) {
-            await this.AgregarAlInventario();
+            await this.MenuAdmin(); 
         } else {
-            console.log(chalk.yellow('\nCerrando el sistema de administración. ¡Nos vemos, mae! 👋\n'));
+            console.log(chalk.yellow('\nCerrando el sistema. ¡Nos vemos! 👋\n'));
             process.exit();
         }
     }
 
-    async VerInventario() {
+    async MenuAdmin() {
         console.clear();
-        console.log(chalk.bold.blue("========================================="));
-        console.log(chalk.bold.blue("        📦 INVENTARIO EN BASE DE DATOS        "));
-        console.log(chalk.bold.blue("=========================================\n"));
+        console.log(chalk.bold.magenta("========================================="));
+        console.log(chalk.bold.magenta("     ⚙️ PANEL DE CONTROL (BACKEND) ⚙️     "));
+        console.log(chalk.bold.magenta("=========================================\n"));
         
-        const inventario = controlador.ObtenerCatalogo();
-
-        if (inventario.length === 0) {
-            console.log(chalk.bgRed.white(" ALERTA: El inventario está completamente vacío. Agregue prendas primero. \n"));
-        } else {
-            // Aquí se ejecuta el Polimorfismo imprimiendo el formato de la clase
-            inventario.forEach(p => console.log(chalk.white(p.ObtenerDetalles())));
-            console.log(chalk.green(`\nTotal de tipos de prendas registradas: ${inventario.length}\n`));
-        }
-
-        await inquirer.prompt([{ type: 'input', name: 'enter', message: 'Presione Enter para regresar al panel principal...' }]);
-        await this.getMenu();
-    }
-
-    async AgregarAlInventario() {
-        console.clear();
-        console.log(chalk.bold.yellow("========================================="));
-        console.log(chalk.bold.yellow("      ➕ Agregar Ropa Al Inventario (JSON)     "));
-        console.log(chalk.bold.yellow("=========================================\n"));
-        
-        const datos = await inquirer.prompt([
-            { type: 'input', name: 'id', message: 'Defina un ID único (Ej: ROP-01):' },
-            { type: 'input', name: 'nombre', message: 'Nombre de la prenda (Ej: Pantalón Jean Slim):' },
-            { type: 'number', name: 'precio', message: 'Precio unitario en dólares ($):' },
-            { type: 'number', name: 'stock', message: 'Cantidad inicial que ingresa al almacén:' },
-            { type: 'input', name: 'categoria', message: 'Categoría/Sección de la prenda (Ej: Camisas Caballeros):' }
+        const opcion = await inquirer.prompt([
+            {
+                type: 'select',
+                name: 'accion',
+                message: 'Seleccione una operación:',
+                choices: ['Ver Inventario', 'Ingresar Nueva Prenda ', 'Volver al Menú']
+            }
         ]);
 
-        // Validar que no dejen campos vacíos o números raros
-        if (!datos.id || !datos.nombre || isNaN(datos.precio) || isNaN(datos.stock)) {
-            console.log(chalk.red("\n❌ Error: Datos inválidos. No se guardó nada.\n"));
-        } else {
-            const nuevaPrenda = new RopaHombre(datos.id, datos.nombre, datos.precio, datos.stock, datos.categoria);
-            
-            // Enviamos el objeto al controlador para que lo guarde en el archivo *.json
-            controlador.AgregarPrenda(nuevaPrenda);
-            
-            console.log(chalk.bgGreen.black("\n ✔️ ÉXITO: Prenda registrada y sincronizada en data/inventario.json 💾 \n"));
-        }
+        if (opcion.accion === 'Ver Inventario') {
+            const inventario = controlador.ObtenerCatalogo();
+            if (inventario.length === 0) {
+                console.log(chalk.yellow("El inventario está vacío."));
+            } else {
+                inventario.forEach(p => console.log(p.ObtenerDetalles()));
+            }
+            await inquirer.prompt([{ type: 'input', name: 'enter', message: '\nPresiona Enter para continuar...' }]);
+            await this.MenuAdmin();
+        } 
+        else if (opcion.accion === 'Nueva Prenda ') {
+            const datos = await inquirer.prompt([
+                { type: 'input', name: 'id', message: 'ID único de prenda (Ej: 001):' },
+                { type: 'input', name: 'nombre', message: 'Nombre del artículo:' },
+                { type: 'number', name: 'precio', message: 'Precio en dólares ($):' },
+                { type: 'number', name: 'stock', message: 'Cantidad inicial (Stock):' },
+                { type: 'input', name: 'corte', message: 'Categoría o Sección:' }
+            ]);
 
-        await inquirer.prompt([{ type: 'input', name: 'enter', message: 'Presione Enter para regresar...' }]);
-        await this.getMenu();
+            const nuevaRopa = new RopaHombre(datos.id, datos.nombre, datos.precio, datos.stock, datos.corte);
+            controlador.AgregarPrenda(nuevaRopa);
+            
+            console.log(chalk.green("\n✔ Prenda guardada exitosamente en la base de datos. 💾\n"));
+            await inquirer.prompt([{ type: 'input', name: 'enter', message: 'Presiona Enter para continuar...' }]);
+            await this.MenuAdmin();
+        } else {
+            await this.getMenu();
+        }
     }
 }
