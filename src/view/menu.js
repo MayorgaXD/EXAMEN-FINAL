@@ -2,11 +2,11 @@ import inquirer from 'inquirer';
 import chalk from 'chalk';
 import { TiendaController } from '../controller/TiendaController.js';
 import { RopaHombre } from '../class/RopaHombre.js';
+import { RopaMujer } from '../class/RopaMujer.js'; //
 import { menuInterfazPublico } from './Catalogo.js'; 
 
 const controlador = new TiendaController();
 
-// Colores Aesthetic para el Menú Principal y Admin
 const neonFucsia = chalk.hex('#FF007F').bold;
 const neonCian = chalk.hex('#00F5FF');
 const pastelMorado = chalk.hex('#D4B2FF');
@@ -26,7 +26,7 @@ export class Menu {
                 name: 'accion',
                 message: 'Selecciona el entorno de ejecución:',
                 choices: [
-                    '✨ Módulo 1: Catálogo y Compras (Cliente)', // Al entrar aquí pueden ver la tabla y comprar de un solo
+                    '✨ Módulo 1: Catálogo Estilizado (Cliente)', 
                     '⚙️  Módulo 2: Panel de Inventario (Admin Backend)', 
                     '❌ Módulo 3: Salir de la Terminal'
                 ]
@@ -56,7 +56,11 @@ export class Menu {
                 type: 'select',
                 name: 'accion',
                 message: 'Operación del Administrador:',
-                choices: ['⚡ Inspeccionar Base de Datos', '➕ Agregarnueva prenda', '⬅️  Regresar al menu principal']
+                choices: [
+                    '⚡ Inspeccionar Base de Datos', 
+                    '➕ Agregar nueva prenda', 
+                    '⬅️  Regresar al menu principal'
+                ]
             }
         ]);
 
@@ -72,22 +76,39 @@ export class Menu {
             await inquirer.prompt([{ type: 'input', name: 'enter', message: '\nPresiona Enter para continuar...' }]);
             await this.MenuAdmin();
         } 
-        else if (opcion.accion === '➕ Inyectar nueva prenda al JSON') {
+        else if (opcion.accion === '➕ Agregar nueva prenda') {
+
+            const seleccionSeccion = await inquirer.prompt([
+                {
+                    type: 'select',
+                    name: 'tipoPrenda',
+                    message: '¿A qué colección pertenece el artículo?',
+                    choices: ['Ropa de Hombre', 'Ropa de Mujer']
+                }
+            ]);
+
             const datos = await inquirer.prompt([
                 { type: 'input', name: 'id', message: 'UUID / ID de control:' },
                 { type: 'input', name: 'nombre', message: 'Nombre de la prenda:' },
                 { type: 'number', name: 'precio', message: 'Precio de venta ($):' },
                 { type: 'number', name: 'stock', message: 'Unidades de stock entrante:' },
-                { type: 'input', name: 'corte', message: 'Categoría/Sección:' }
+                { type: 'input', name: 'corte', message: 'Categoría/Sección (Talla/Corte):' }
             ]);
 
-            const nuevaRopa = new RopaHombre(datos.id, datos.nombre, datos.precio, datos.stock, datos.corte);
+            let nuevaRopa;
+            if (seleccionSeccion.tipoPrenda === 'Ropa de Mujer') {
+                nuevaRopa = new RopaMujer(datos.id, datos.nombre, datos.precio, datos.stock, datos.corte);
+            } else {
+                nuevaRopa = new RopaHombre(datos.id, datos.nombre, datos.precio, datos.stock, datos.corte);
+            }
+
             controlador.AgregarPrenda(nuevaRopa);
             
             console.log(neonCian("\n✔️ System: Objeto instanciado y persistido en JSON con éxito. 💾\n"));
             await inquirer.prompt([{ type: 'input', name: 'enter', message: 'Presiona Enter para continuar...' }]);
             await this.MenuAdmin();
-        } else {
+        } 
+        else {
             await this.getMenu();
         }
     }

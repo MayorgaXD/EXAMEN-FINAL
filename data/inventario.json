@@ -10,7 +10,29 @@
     "id": "002",
     "nombre": "Tommy",
     "precio": 132,
-    "stock": 3,
+    "stock": 2,
     "tipo": "RopaHombre"
+  },
+  {
+    "id": "001",
+    "nombre": "Gorras",
+    "precio": 10,
+    "stock": 10,
+    "tipo": "RopaHombre"
+  },
+  {
+    "id": "004",
+    "nombre": "Sueter",
+    "precio": 90,
+    "stock": 7,
+    "tipo": "RopaHombre"
+  },
+  {
+    "id": "006",
+    "nombre": "Blusa",
+    "precio": 43,
+    "stock": 3,
+    "corte": "M",
+    "tipo": "RopaMujer"
   }
 ]

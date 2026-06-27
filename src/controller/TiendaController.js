@@ -1,8 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-import inquirer from 'inquirer'; // Para el flujo interactivo de compra
+import inquirer from 'inquirer'; 
 import chalk from 'chalk';
-import { RopaHombre } from '../class/RopaHombre.js'; // Ajustado a tu ruta de clases
+import { RopaHombre } from '../class/RopaHombre.js'; 
+import { RopaMujer } from '../class/RopaMujer.js'; 
 
 const filePath = path.resolve('data/inventario.json');
 
@@ -12,7 +13,7 @@ export class TiendaController {
         this.CargarDatos();
     }
 
-    // 📦 Carga y Encapsulamiento de los objetos
+    // Carga y Encapsulamiento de los objetos
     CargarDatos() {
         try {
             const dir = path.dirname(filePath);
@@ -27,16 +28,21 @@ export class TiendaController {
             const dataRaw = fs.readFileSync(filePath, 'utf-8');
             const listaData = JSON.parse(dataRaw || '[]');
 
-            // Encapsulamiento: Mapeamos el JSON plano para volver a instanciar objetos reales de la clase
             this.prendas = listaData.map(item => {
-                return new RopaHombre(item.id, item.nombre, item.precio, item.stock, item.categoria || item.tipo);
+                const especificacion = item.corte || item.categoria || item.tipo || 'General';
+
+                if (item.tipo === 'RopaMujer') {
+                    return new RopaMujer(item.id, item.nombre, item.precio, item.stock, especificacion);
+                } else {
+                    return new RopaHombre(item.id, item.nombre, item.precio, item.stock, especificacion);
+                }
             });
         } catch (error) {
             this.prendas = [];
         }
     }
 
-    // Persistencia de datos en formato JSON estructurado
+    // Persistencia de datos en formato JSON structured
     GuardarDatos() {
         const datosFormateados = this.prendas.map(p => {
             return typeof p.toJSON === 'function' ? p.toJSON() : { ...p };
@@ -53,7 +59,7 @@ export class TiendaController {
         this.GuardarDatos();
     }
 
-    // 🛒 MÓDULO DE COMPRA CON CONTROL DE STOCK Y CANCELACIÓN
+    // MÓDULO DE COMPRA CON CONTROL DE STOCK Y CANCELACIÓN
     async ProcesarCompraCliente() {
         console.clear();
         console.log(chalk.bgBlue.white.bold(" ════════ MÓDULO DE COMPRA INTERACTIVA ════════ \n"));
@@ -63,18 +69,16 @@ export class TiendaController {
             return;
         }
 
-        // 1. CORREGIDO: Usamos los Getters p.nombre, p.precio y p.stock en vez de variables crudas
         const listaOpciones = this.prendas.map(p => ({
             name: `${p.nombre} - Precio: $${p.precio} (Stock: ${p.stock} pzas)`,
             value: p.id
         }));
 
-        // Opción para salir del menú sin realizar compras
         listaOpciones.push({ name: chalk.red("← Cancelar y volver al menú principal"), value: null });
 
         const seleccion = await inquirer.prompt([
             {
-                type: 'select', // Tipo 'select' compatible con tu versión de Inquirer
+                type: 'select', 
                 name: 'prendaId',
                 message: 'Seleccione el artículo que desea adquirir:',
                 choices: listaOpciones
@@ -88,13 +92,11 @@ export class TiendaController {
 
         const prendaSeleccionada = this.prendas.find(p => p.id === seleccion.prendaId);
 
-        // CORREGIDO: Validación de stock usando el Getter .stock
         if (prendaSeleccionada.stock <= 0) {
             console.log(chalk.bgRed.white("\n [Aviso] El artículo seleccionado no tiene unidades disponibles. "));
             return;
         }
 
-        // 2. Selección de la cantidad controlando que NO se pase del stock real
         const respuestaCantidad = await inquirer.prompt([
             {
                 type: 'input', 
@@ -105,7 +107,6 @@ export class TiendaController {
                     if (isNaN(num) || num <= 0) {
                         return "Por favor, ingrese un número entero mayor a cero.";
                     }
-                    // CORREGIDO: Compara usando el Getter .stock
                     if (num > prendaSeleccionada.stock) {
                         return `Acción denegada. Solo puedes comprar un máximo de ${prendaSeleccionada.stock} unidades.`;
                     }
@@ -115,11 +116,8 @@ export class TiendaController {
         ]);
 
         const cantidadFinal = parseInt(respuestaCantidad.cantidad);
-        
-        // CORREGIDO: El cálculo del monto se procesa utilizando el Getter .precio
         const montoTotal = prendaSeleccionada.precio * cantidadFinal;
 
-        // 3. Resumen final del monto
         console.log(`\n============================================`);
         console.log(chalk.cyan(` Artículo:   `) + prendaSeleccionada.nombre);
         console.log(chalk.cyan(` Cantidad:   `) + cantidadFinal + " unidad(es)");
@@ -136,7 +134,6 @@ export class TiendaController {
         ]);
 
         if (confirmacion.proceder) {
-            // CORREGIDO: Descontamos las unidades usando el Setter .stock de forma segura
             prendaSeleccionada.stock = prendaSeleccionada.stock - cantidadFinal;
             this.GuardarDatos(); 
             console.log(chalk.bgGreen.black("\n ✔️ ¡Compra procesada con éxito! Inventario actualizado. "));

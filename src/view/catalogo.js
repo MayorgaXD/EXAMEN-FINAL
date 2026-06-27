@@ -4,14 +4,13 @@ import { TiendaController } from '../controller/TiendaController.js';
 
 const controlador = new TiendaController();
 
-// 🎨 PALETA AESTHETIC DE NEÓN PASTEL
-const colorBorde = chalk.hex('#708090');       // Gris Slate elegante para los bordes
-const colorTitulo = chalk.hex('#98FF98');      // Menta Pastel brillante para el encabezado
-const colorClave = chalk.hex('#E0B0FF');       // Malva/Lila Pastel para los ID y Encabezados
-const colorTexto = chalk.hex('#F0F8FF');       // Blanco Alice suave para los nombres de ropa
-const colorPrecio = chalk.hex('#FFD700');      // Oro suave para los precios 💰
-const colorStock = chalk.hex('#87CEEB');       // Azul Cielo para las cantidades
-const colorAviso = chalk.hex('#FF7F50');       // Coral suave para las advertencias
+const colorBorde = chalk.hex('#708090');       
+const colorTitulo = chalk.hex('#98FF98');      
+const colorClave = chalk.hex('#E0B0FF');      
+const colorTexto = chalk.hex('#F0F8FF');       
+const colorPrecio = chalk.hex('#FFD700');      
+const colorStock = chalk.hex('#87CEEB');      
+const colorAviso = chalk.hex('#FF7F50');       
 
 function mostrarCatalogoEstilizado() {
     console.clear();
@@ -74,10 +73,8 @@ export async function menuInterfazPublico(regresarAlMenuMaestro) {
     ]);
 
     if (respuestas.opcion === 'COMPRAR') {
-        // Ejecuta tu backend de compras directamente
         await controlador.ProcesarCompraCliente();
         await inquirer.prompt([{ type: 'input', name: 'enter', message: '\nPresiona Enter para continuar...' }]);
-        // Recarga la tabla de inmediato para mostrar el nuevo stock rebajado
         await menuInterfazPublico(regresarAlMenuMaestro);
     } 
     else if (respuestas.opcion === 'REFRESCAR') {
